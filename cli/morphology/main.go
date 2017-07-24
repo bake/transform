@@ -33,7 +33,7 @@ func main() {
 		000, 255, 000,
 	}
 
-	p, err := transform.Erode(m.Pix, 11, s, 3)
+	p, err := transform.Dilate(m.Pix, 11, s, 3)
 	if err != nil {
 		log.Fatal(err)
 	}
