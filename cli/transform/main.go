@@ -5,8 +5,9 @@ import (
 	"image"
 	"image/gif"
 	"log"
-	"math"
 	"os"
+
+	"git.192k.pw/bake/transform"
 )
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 			continue
 		}
 
-		x, y, _ = rotate(x, y, *deg)
+		x, y, _ = transform.Rotate(x, y, *deg)
 		// x, y, _ = translate(x, y, x%16, y%16)
 		j := x + y*w
 		if j >= 0 && j < len(n.Pix) {
@@ -48,20 +49,4 @@ func main() {
 	if err := gif.Encode(f, n, nil); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func translate(x, y, m, n int) (int, int, int) {
-	return x + m, y + n, 1
-}
-
-func rotate(x, y int, deg float64) (int, int, int) {
-	deg = deg * (math.Pi / 180)
-	x1 := float64(x)*math.Cos(deg) - float64(y)*math.Sin(deg)
-	y1 := float64(x)*math.Sin(deg) + float64(y)*math.Cos(deg)
-	z1 := float64(1)
-	return int(x1), int(y1), int(z1)
-}
-
-func scale(x, y, m, n int) (int, int, int) {
-	return x * m, y * n, 1
 }
