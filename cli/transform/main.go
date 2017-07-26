@@ -11,42 +11,29 @@ import (
 )
 
 func main() {
-	out := flag.String("out", "out.gif", "Out file")
+	out := flag.String("o", "out.gif", "Out file")
+	w := flag.Int("width", 255, "Width")
+	h := flag.Int("height", 255, "Height")
+	b := flag.Int("border", 50, "Border")
 	deg := flag.Float64("deg", 0, "Degree")
 	flag.Parse()
 
-	w := 255
-	h := 255
-
-	m := image.NewGray(image.Rect(0, 0, w, h))
-	n := image.NewGray(image.Rect(0, 0, w, h))
-
-	for i := 0; i < len(m.Pix); i++ {
-		m.Pix[i] = 255 // uint8(i % w)
-	}
-
-	for i := 0; i < len(m.Pix); i++ {
-		x := i % w
-		y := i / w
-		if x < 50 || x > w-50 || y < 50 || y > h-50 {
-			continue
-		}
-
-		x, y, _ = transform.Rotate(x, y, *deg)
-		// x, y, _ = translate(x, y, x%16, y%16)
-		j := x + y*w
-		if j >= 0 && j < len(n.Pix) {
-			n.Pix[j] = m.Pix[i]
+	m := image.NewGray(image.Rect(0, 0, *w, *h))
+	for i := range m.Pix {
+		x := i % *w
+		y := i / *w
+		if x > *b && x < *w-*b && y > *b && y < *h-*b {
+			m.Pix[i] = 255
 		}
 	}
+	m.Pix = transform.Rotate(m.Pix, *w, *deg)
 
 	f, err := os.Create(*out)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
-
-	if err := gif.Encode(f, n, nil); err != nil {
+	if err := gif.Encode(f, m, nil); err != nil {
 		log.Fatal(err)
 	}
 }
