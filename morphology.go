@@ -1,18 +1,16 @@
 package transform
 
-import "fmt"
-
 // Dilate pixels p with mask s
-func Dilate(p []uint8, pw int, s []uint8, sw int) ([]uint8, error) {
-	if sw%2 == 0 {
-		return nil, fmt.Errorf("the mask has to be odd numbered")
-	}
-
+func Dilate(p []uint8, pw int, s []uint8, sw int) []uint8 {
 	ph := len(p) / pw
 	sh := len(s) / sw
 	r := make([]uint8, len(p))
 
 	for i := 0; i < len(p); i++ {
+		if p[i] != s[len(s)/2] {
+			continue
+		}
+
 		for j := 0; j < len(s); j++ {
 			if s[j] == 0 {
 				continue
@@ -23,22 +21,15 @@ func Dilate(p []uint8, pw int, s []uint8, sw int) ([]uint8, error) {
 			if x < 0 || y < 0 || x >= pw || y >= ph {
 				continue
 			}
-			if s[j] > p[x+y*pw] {
-				continue
-			}
-			r[i] = s[j]
+			r[x+y*pw] = s[j]
 		}
 	}
 
-	return r, nil
+	return r
 }
 
 // Erode pixels p with mask s
-func Erode(p []uint8, pw int, s []uint8, sw int) ([]uint8, error) {
-	if sw%2 == 0 {
-		return nil, fmt.Errorf("the mask has to be odd numbered")
-	}
-
+func Erode(p []uint8, pw int, s []uint8, sw int) []uint8 {
 	ph := len(p) / pw
 	sh := len(s) / sw
 	r := make([]uint8, len(p))
@@ -66,21 +57,15 @@ func Erode(p []uint8, pw int, s []uint8, sw int) ([]uint8, error) {
 		}
 	}
 
-	return r, nil
+	return r
 }
 
-func Open(p []uint8, pw int, s []uint8, sw int) ([]uint8, error) {
-	p, err := Erode(p, pw, s, sw)
-	if err != nil {
-		return nil, err
-	}
-	return Dilate(p, pw, s, sw)
+// Open executes erode and dilate
+func Open(p []uint8, pw int, s []uint8, sw int) []uint8 {
+	return Dilate(Erode(p, pw, s, sw), pw, s, sw)
 }
 
-func Close(p []uint8, pw int, s []uint8, sw int) ([]uint8, error) {
-	p, err := Dilate(p, pw, s, sw)
-	if err != nil {
-		return nil, err
-	}
-	return Erode(p, pw, s, sw)
+// Close executes dilate and erode
+func Close(p []uint8, pw int, s []uint8, sw int) []uint8 {
+	return Erode(Dilate(p, pw, s, sw), pw, s, sw)
 }
