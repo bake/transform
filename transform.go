@@ -1,9 +1,14 @@
 package transform
 
-import "math"
-import "sync"
+import (
+	"math"
+	"sync"
+)
 
 // Translate matrix
+//  |x'|   |1 0 m|   |x|
+//  |y'| = |0 1 n| * |y|
+//  |z'|   |0 0 1|   |1|
 func Translate(p []uint8, pw, m, n int) []uint8 {
 	return exec(p, pw, func(x, y int) (int, int, int) {
 		return translate(x, y, m, n)
@@ -14,21 +19,43 @@ func translate(x, y, m, n int) (int, int, int) {
 	return x + m, y + n, 1
 }
 
-// Rotate by deg degree
+// Rotate by deg degree around its own center (m, n)
+//  |x'|   |1 0 m|   |cos(d) -sin(d) 0|   |1 0 -m|
+//  |y'| = |0 1 n| * |sin(d)  cos(d) 0| * |0 0 -n|
+//  |z'|   |0 1 1|   |     0       0 1|   |0 0  1|
 func Rotate(p []uint8, pw int, deg float64) []uint8 {
 	deg = deg * (math.Pi / 180)
+	m := pw / 2
+	n := len(p) / pw / 2
 	return exec(p, pw, func(x, y int) (int, int, int) {
-		return rotate(x, y, deg)
+		return rotate(x, y, m, n, deg)
 	})
 }
 
-func rotate(x, y int, deg float64) (int, int, int) {
-	x1 := float64(x)*math.Cos(deg) - float64(y)*math.Sin(deg)
-	y1 := float64(x)*math.Sin(deg) + float64(y)*math.Cos(deg)
+// rotate x, y by deg degree around m, n as its center
+func rotate(x, y, m, n int, deg float64) (int, int, int) {
+	// rotate while zero is top, left
+	//  |x'|   |cos(d) -sin(d) 0|   |x|
+	//  |y'| = |sin(d)  cos(d) 0| * |y|
+	//  |z'|   |     0       0 1|   |1|
+	// x1 := float64(x)*math.Cos(deg) - float64(y)*math.Sin(deg)
+	// y1 := float64(x)*math.Sin(deg) + float64(y)*math.Cos(deg)
+
+	// rotate around m, n
+	x0 := float64(x)
+	y0 := float64(y)
+	m0 := float64(m)
+	n0 := float64(n)
+	x1 := m0 + math.Cos(deg)*(x0-m0) - math.Sin(deg)*(y0-n0)
+	y1 := n0 + math.Sin(deg)*(x0-m0) + math.Cos(deg)*(y0-n0)
+
 	return int(x1), int(y1), 1
 }
 
 // Scale by m and n
+//  |x'|   |m 0 0|   |x|
+//  |y'| = |0 n 0| * |y|
+//  |z'|   |0 0 1|   |1|
 func Scale(p []uint8, pw int, m, n float64) []uint8 {
 	return exec(p, pw, func(x, y int) (int, int, int) {
 		return scale(x, y, m, n)
@@ -40,6 +67,9 @@ func scale(x, y int, m, n float64) (int, int, int) {
 }
 
 // Shear by m and n
+//  |x'|   |1 n 0|   |x|
+//  |y'| = |m 1 0| * |y|
+//  |z'|   |0 0 1|   |1|
 func Shear(p []uint8, pw int, m, n float32) []uint8 {
 	return exec(p, pw, func(x, y int) (int, int, int) {
 		return shear(x, y, m, n)
