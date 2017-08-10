@@ -21,8 +21,8 @@ func translate(x, y, m, n int) (int, int, int) {
 
 // Rotate by deg degree around its own center (m, n)
 //  |x'|   |1 0 m|   |cos(d) -sin(d) 0|   |1 0 -m|
-//  |y'| = |0 1 n| * |sin(d)  cos(d) 0| * |0 0 -n|
-//  |z'|   |0 1 1|   |     0       0 1|   |0 0  1|
+//  |y'| = |0 1 n| * |sin(d)  cos(d) 0| * |0 1 -n|
+//  |z'|   |0 0 1|   |     0       0 1|   |0 0  1|
 func Rotate(p []uint8, pw int, deg float64) []uint8 {
 	deg = deg * (math.Pi / 180)
 	m := pw / 2
