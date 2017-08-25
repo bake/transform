@@ -35,26 +35,6 @@ func Rotate(p []uint8, pw int, deg float64) []uint8 {
 	})
 }
 
-// RotateC by deg degree around its own center (m, n)
-//  |x'|   |1 0 m|   |cos(d) -sin(d) 0|   |1 0 -m|
-//  |y'| = |0 1 n| * |sin(d)  cos(d) 0| * |0 1 -n|
-//  |z'|   |0 0 1|   |     0       0 1|   |0 0  1|
-func RotateC(p []uint8, pw int, deg float64) []uint8 {
-	deg = deg * (math.Pi / 180)
-	m := pw / 2
-	n := len(p) / pw / 2
-	return exec(p, pw, func(x, y int) (int, int, int) {
-		x0 := float64(x)
-		y0 := float64(y)
-		m0 := float64(m)
-		n0 := float64(n)
-		x1 := m0 + math.Cos(deg)*(x0-m0) - math.Sin(deg)*(y0-n0)
-		y1 := n0 + math.Sin(deg)*(x0-m0) + math.Cos(deg)*(y0-n0)
-
-		return int(x1), int(y1), 1
-	})
-}
-
 // Scale by m and n
 //  |x'|   |m 0 0|   |x|
 //  |y'| = |0 n 0| * |y|
