@@ -1,110 +1,47 @@
-package transform
+package transform_test
 
 import (
 	"fmt"
 	"image"
 	"testing"
+
+	"git.192k.pw/bake/transform"
 )
 
 func TestRotate(t *testing.T) {
-	im := image.NewGray(image.Rectangle{image.Point{X: 0, Y: 0}, image.Point{X: 6, Y: 6}})
 	tt := []struct {
+		w, h     int
 		pix, res []uint8
 		deg      float64
 	}{
 		{
+			3, 3,
 			[]uint8{
-				000, 000, 000, 000, 000, 000,
-				000, 000, 000, 000, 000, 000,
-				000, 000, 255, 255, 000, 000,
-				000, 000, 000, 255, 000, 000,
-				000, 000, 000, 000, 000, 000,
-				000, 000, 000, 000, 000, 000,
+				000, 000, 000, 000, 000, 000, 000, 000, 000, 000, 000, 000,
+				000, 000, 000, 000, 255, 255, 255, 255, 255, 255, 255, 255,
+				000, 000, 000, 000, 000, 000, 000, 000, 255, 255, 255, 255,
 			},
 			[]uint8{
-				000, 000, 000, 000, 000, 000,
-				000, 000, 000, 000, 000, 000,
-				000, 000, 000, 000, 255, 000,
-				000, 000, 000, 255, 255, 000,
-				000, 000, 000, 000, 000, 000,
-				000, 000, 000, 000, 000, 000,
+				000, 000, 000, 000, 000, 000, 000, 000, 000, 000, 000, 000,
+				000, 000, 000, 000, 255, 255, 255, 255, 000, 000, 000, 000,
+				255, 255, 255, 255, 255, 255, 255, 255, 000, 000, 000, 000,
 			},
 			90,
 		},
 	}
 
 	for i, tc := range tt {
-		n := fmt.Sprintf("rotate %d", i)
-		t.Run(n, func(t *testing.T) {
-			im.Pix = tc.pix
-			im, err := Rotate(im, tc.deg)
+		t.Run(fmt.Sprintf("rotate %d", i), func(t *testing.T) {
+			src := image.NewRGBA(image.Rect(0, 0, tc.w, tc.h))
+			src.Pix = tc.pix
+			dst, err := transform.Rotate(src, tc.deg)
 			if err != nil {
 				t.Fatal(err)
 			}
-			for j, p := range im.(*image.Gray).Pix {
+			fmt.Println(dst.(*image.RGBA).Pix)
+			for j, p := range dst.(*image.RGBA).Pix {
 				if p != tc.res[j] {
-					t.Fatalf("on %dx%d: expected %d got %d", j%11, j/11, tc.res[j], p)
-				}
-			}
-		})
-	}
-}
-
-func BenchmarkRotate(b *testing.B) {
-	im := image.NewGray(image.Rectangle{image.Point{X: 0, Y: 0}, image.Point{X: 6, Y: 6}})
-	im.Pix = []uint8{
-		000, 000, 000, 000, 000, 000,
-		000, 000, 000, 000, 000, 000,
-		000, 000, 255, 255, 000, 000,
-		000, 000, 000, 255, 000, 000,
-		000, 000, 000, 000, 000, 000,
-		000, 000, 000, 000, 000, 000,
-	}
-
-	for n := 0; n < b.N; n++ {
-		Rotate(im, 90)
-	}
-}
-
-func TestShear(t *testing.T) {
-	im := image.NewGray(image.Rectangle{image.Point{X: 0, Y: 0}, image.Point{X: 6, Y: 6}})
-	tt := []struct {
-		pix, res []uint8
-		m, n     float32
-	}{
-		{
-			[]uint8{
-				000, 000, 000, 000, 000, 000,
-				000, 000, 000, 000, 000, 000,
-				000, 000, 255, 255, 000, 000,
-				000, 000, 000, 255, 000, 000,
-				000, 000, 000, 000, 000, 000,
-				000, 000, 000, 000, 000, 000,
-			},
-			[]uint8{
-				000, 000, 000, 000, 000, 000,
-				000, 000, 000, 000, 000, 000,
-				000, 000, 000, 000, 000, 000,
-				000, 000, 000, 255, 255, 000,
-				000, 000, 000, 000, 255, 000,
-				000, 000, 000, 000, 000, 000,
-			},
-			.5,
-			.5,
-		},
-	}
-
-	for i, tc := range tt {
-		n := fmt.Sprintf("shear %d", i)
-		t.Run(n, func(t *testing.T) {
-			im.Pix = tc.pix
-			im, err := Shear(im, tc.m, tc.n)
-			if err != nil {
-				t.Fatal(err)
-			}
-			for j, p := range im.(*image.Gray).Pix {
-				if p != tc.res[j] {
-					t.Fatalf("on %dx%d: expected %d got %d", j%11, j/11, tc.res[j], p)
+					t.Fatalf("on %dx%d: expected %d, got %d", j%11, j/11, tc.res[j], p)
 				}
 			}
 		})
