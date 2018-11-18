@@ -10,11 +10,11 @@ import (
 //  |x'|   |1 0 m|   |cos(d) -sin(d) 0|   |1 0 -m|
 //  |y'| = |0 1 n| * |sin(d)  cos(d) 0| * |0 1 -n|
 //  |z'|   |0 0 1|   |     0       0 1|   |0 0  1|
-func Rotate(im draw.Image, deg float64) (draw.Image, error) {
+func Rotate(im draw.Image, deg float64) draw.Image {
 	deg = deg * (math.Pi / 180)
 	return exec(im, func(x, y int) (int, int) {
-		x2 := math.Cos(deg)*float64(x) - math.Sin(deg)*float64(y)
-		y2 := math.Sin(deg)*float64(x) + math.Cos(deg)*float64(y)
+		x2 := math.Cos(-deg)*float64(x) - math.Sin(-deg)*float64(y)
+		y2 := math.Sin(-deg)*float64(x) + math.Cos(-deg)*float64(y)
 		return int(math.Round(x2)), int(math.Round(y2))
 	})
 }
@@ -23,17 +23,25 @@ func Rotate(im draw.Image, deg float64) (draw.Image, error) {
 //  |x'|   |m 0 0|   |x|
 //  |y'| = |0 n 0| * |y|
 //  |z'|   |0 0 1|   |1|
-func Scale(im draw.Image, m, n float64) (draw.Image, error) {
+func Scale(im draw.Image, m, n float64) draw.Image {
 	return exec(im, func(x, y int) (int, int) {
 		return int(math.Round(float64(x) * m)), int(math.Round(float64(y) * n))
 	})
+}
+
+func MirrorX(im draw.Image) draw.Image {
+	return Scale(im, -1, 1)
+}
+
+func MirrorY(im draw.Image) draw.Image {
+	return Scale(im, 1, -1)
 }
 
 // Shear by m and n.
 //  |x'|   |1 n 0|   |x|
 //  |y'| = |m 1 0| * |y|
 //  |z'|   |0 0 1|   |1|
-func Shear(im draw.Image, m, n float64) (draw.Image, error) {
+func Shear(im draw.Image, m, n float64) draw.Image {
 	return exec(im, func(x, y int) (int, int) {
 		return x + int(math.Round(float64(y)*n)), int(math.Round(float64(x)*m)) + y
 	})
@@ -43,14 +51,14 @@ func Shear(im draw.Image, m, n float64) (draw.Image, error) {
 //  |x'|   |1 0 m|   |x|
 //  |y'| = |0 1 n| * |y|
 //  |z'|   |0 0 1|   |1|
-func Translate(im draw.Image, m, n int) (draw.Image, error) {
+func Translate(im draw.Image, m, n int) draw.Image {
 	return exec(im, func(x, y int) (int, int) {
 		return x + m, y + n
 	})
 }
 
 // exec the transformation on an draw.Image.
-func exec(src draw.Image, f func(x, y int) (int, int)) (draw.Image, error) {
+func exec(src draw.Image, f func(x, y int) (int, int)) draw.Image {
 	b := src.Bounds()
 	dst := image.NewRGBA(b)
 	type M struct{ x1, y1, x2, y2 int }
@@ -75,5 +83,5 @@ func exec(src draw.Image, f func(x, y int) (int, int)) (draw.Image, error) {
 		}
 	}
 
-	return dst, nil
+	return dst
 }
