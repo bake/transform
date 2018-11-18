@@ -70,7 +70,7 @@ func exec(src draw.Image, f func(x, y int) (int, int)) (draw.Image, error) {
 		for x := b.Min.X; x < b.Max.X; x++ {
 			m := <-c
 			if m.x1 < b.Max.X && m.y1 < b.Max.Y && m.x2 < b.Max.X && m.y2 < b.Max.Y {
-				dst.Set(m.x2, m.y2, src.At(m.x1, m.y1))
+				dst.Set(m.x1, m.y1, src.At(m.x2, m.y2))
 			}
 		}
 	}
