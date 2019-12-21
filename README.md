@@ -1,6 +1,6 @@
 # Transform
 
-[![GoDoc](https://godoc.org/github.com/BakeRolls/transform?status.svg)](https://godoc.org/github.com/BakeRolls/transform)
+[![GoDoc](https://godoc.org/github.com/bake/transform?status.svg)](https://godoc.org/github.com/bake/transform)
 
 Rotate, Scale, Shear and Translate [`draw.Image`](https://godoc.org/image/draw#Image)s.
 
